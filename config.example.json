@@ -1,0 +1,8 @@
+{
+  "card": "article.product_pod",
+  "name": "h3 a",
+  "price": "p.price_color",
+  "availability": "p.instock.availability",
+  "rating": "p.star-rating",
+  "next_page": "li.next a"
+}
