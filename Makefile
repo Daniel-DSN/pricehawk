@@ -4,7 +4,7 @@ install:
 	pip install -r requirements.txt
 
 test:
-	python -m pytest -q
+	PYTHONPATH=src python3 -m pytest -q
 
 demo: scrape
 	@echo "--- second run to build history ---"
