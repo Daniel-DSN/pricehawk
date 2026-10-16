@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from urllib.parse import urljoin
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from .models import Product
 
@@ -96,6 +96,28 @@ def parse_price(raw: str) -> float | None:
         return None
 
 
+def resolve_href(el: Tag, card: Tag | None = None) -> str:
+    """URL of the product behind a card.
+
+    ``cfg.name`` often points at a *wrapper* (``div``/``h3``/``span``) rather
+    than the ``<a>`` itself — themes like Nuvemshop, Magento and bespoke shops
+    nest the link one level up or down. Fall back to the nearest anchor, then
+    to the card's first real link, so the exported ``url`` column is the
+    product page and not the listing page.
+    """
+    if el.get("href"):
+        return str(el.get("href"))
+    link = el.find_parent("a") or el.find("a")
+    if link and link.get("href"):
+        return str(link.get("href"))
+    if card is not None:
+        for anchor in card.find_all("a", href=True):
+            href = str(anchor["href"])
+            if href and not href.startswith(("javascript:", "#")):
+                return href
+    return ""
+
+
 def parse_listing(html: str, base_url: str, cfg: SelectorConfig) -> list[Product]:
     """Pure parser: HTML → products. No I/O."""
     soup = BeautifulSoup(html, "html.parser")
@@ -106,7 +128,7 @@ def parse_listing(html: str, base_url: str, cfg: SelectorConfig) -> list[Product
         if not name_el:
             continue
         name = name_el.get_text(strip=True)
-        href = name_el.get("href", "")
+        href = resolve_href(name_el, card)
         price = parse_price(price_el.get_text()) if price_el else None
 
         availability = ""
