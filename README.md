@@ -122,7 +122,7 @@ python -m pytest -q
 ```
 
 ```
-16 passed in 1.71s
+20 passed in 1.71s
 ```
 
 Coverage: price parsing (GBP/BR formats), listing parser, pagination,
